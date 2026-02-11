@@ -49,7 +49,7 @@ public struct KeychainValue<T: Codable & Sendable>: DynamicProperty, Sendable {
             // SwiftUI will handle updates through the binding
             return internalValue
         }
-        set {
+        nonmutating set {
             // Update keychain
             do {
                 try keychain.set(newValue, forKey: key)
