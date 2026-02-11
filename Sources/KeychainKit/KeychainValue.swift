@@ -100,19 +100,6 @@ public struct KeychainValue<T: Codable & Sendable>: DynamicProperty, Sendable {
         )
     }
     
-    /// Helper function to compare two values for equality
-    private func areEqual(_ lhs: T, _ rhs: T) -> Bool {
-        // For Codable types, we can compare by encoding to Data
-        // This is not the most efficient approach but works for all Codable types
-        do {
-            let lhsData = try JSONEncoder().encode(lhs)
-            let rhsData = try JSONEncoder().encode(rhs)
-            return lhsData == rhsData
-        } catch {
-            // If encoding fails, fall back to assuming they're different
-            return false
-        }
-    }
 }
 
 // MARK: - Convenience Initializers

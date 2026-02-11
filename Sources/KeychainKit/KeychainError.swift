@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 /// Errors that can occur when working with the keychain
-public enum KeychainError: Error, Sendable {
+public enum KeychainError: Error, Sendable, Equatable {
     /// The requested keychain item was not found
     case itemNotFound
     /// A duplicate item already exists in the keychain

@@ -10,7 +10,7 @@ import KeychainKit
 
 // MARK: - Demo Model
 
-struct UserCredentials: Codable, Sendable {
+nonisolated struct UserCredentials: Codable, Sendable {
     var username: String
     var email: String
     var tier: String
@@ -125,6 +125,8 @@ struct StringDemoView: View {
                 }
             }
             .navigationTitle("String Storage")
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) } } }
         }
     }
     
@@ -228,6 +230,8 @@ struct CodableDemoView: View {
                 }
             }
             .navigationTitle("Codable Storage")
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) } } }
         }
     }
     
@@ -293,12 +297,18 @@ struct PropertyWrapperDemoView: View {
                         
                         Spacer()
                         
-                        Button { counter -= 1 } label: {
+                        Button {
+                            let newVal = counter - 1
+                            counter = newVal
+                        } label: {
                             Image(systemName: "minus.circle.fill")
                                 .font(.title)
                         }
                         
-                        Button { counter += 1 } label: {
+                        Button {
+                            let newVal = counter + 1
+                            counter = newVal
+                        } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title)
                         }
@@ -321,6 +331,7 @@ struct PropertyWrapperDemoView: View {
                 }
             }
             .navigationTitle("@KeychainValue")
+            .scrollDismissesKeyboard(.interactively)
         }
     }
 }
@@ -392,6 +403,8 @@ struct BiometricDemoView: View {
                 }
             }
             .navigationTitle("Biometric Lock")
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) } } }
             .onAppear {
                 biometricAvailable = Keychain.isBiometricAuthenticationAvailable()
                 biometricType = Keychain.biometricType() ?? ""

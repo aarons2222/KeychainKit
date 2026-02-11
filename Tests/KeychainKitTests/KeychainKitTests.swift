@@ -315,6 +315,47 @@ final class KeychainKitTests: XCTestCase {
     // Note: We can't easily test actual biometric operations in unit tests
     // as they require user interaction and physical device capabilities
     
+    // MARK: - Key Validation Tests
+    
+    func testEmptyKeyThrows() {
+        let testData = "test".data(using: .utf8)!
+        XCTAssertThrowsError(try keychain.set(testData, forKey: "")) { error in
+            XCTAssertEqual(error as? KeychainError, .invalidKey)
+        }
+    }
+    
+    func testOverlongKeyThrows() {
+        let longKey = String(repeating: "a", count: 513)
+        let testData = "test".data(using: .utf8)!
+        XCTAssertThrowsError(try keychain.set(testData, forKey: longKey)) { error in
+            XCTAssertEqual(error as? KeychainError, .invalidKey)
+        }
+    }
+    
+    func testMaxLengthKeyWorks() throws {
+        let maxKey = String(repeating: "a", count: 512)
+        let testData = "test".data(using: .utf8)!
+        try keychain.set(testData, forKey: maxKey)
+        let result = try keychain.get(forKey: maxKey)
+        XCTAssertEqual(testData, result)
+    }
+    
+    // MARK: - Synchronizable Tests
+    
+    func testSynchronizableKeychainInit() {
+        // Verify synchronizable keychain can be initialized
+        let syncKeychain = Keychain(
+            service: testService + "_sync",
+            synchronizable: true
+        )
+        
+        XCTAssertTrue(syncKeychain.synchronizable)
+        XCTAssertFalse(keychain.synchronizable)
+        
+        // Note: actual sync operations require keychain-access-groups entitlement
+        // which isn't available in unit test environments
+    }
+    
     // MARK: - Performance Tests
     
     func testPerformanceOfMultipleOperations() throws {

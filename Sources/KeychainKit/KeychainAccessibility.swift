@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 /// Controls when a keychain item is accessible
-public enum KeychainAccessibility: Sendable {
+public enum KeychainAccessibility: Sendable, CustomStringConvertible {
     /// Item data can only be accessed while the device is unlocked by the user
     case whenUnlocked
     /// Item data can only be accessed once the device has been unlocked after a restart

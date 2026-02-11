@@ -31,6 +31,7 @@ struct KeychainQuery: Sendable {
     }
     
     /// Creates a query for adding an item with biometric protection
+    /// - Note: Biometric items are always device-only, so `synchronizable` is ignored here.
     func addBiometricQuery(account: String, data: Data) throws -> [String: Any] {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
@@ -54,9 +55,9 @@ struct KeychainQuery: Sendable {
             query[kSecAttrAccessGroup as String] = accessGroup
         }
         
-        if synchronizable {
-            query[kSecAttrSynchronizable as String] = kCFBooleanTrue
-        }
+        // Deliberately NOT adding synchronizable here — biometric items use
+        // kSecAttrAccessibleWhenUnlockedThisDeviceOnly which is device-only
+        // by definition. Syncing biometric items to iCloud would conflict.
         
         return query
     }

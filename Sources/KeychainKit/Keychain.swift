@@ -211,7 +211,7 @@ public final class Keychain: Sendable {
         try validateKey(key)
         
         let data = try JSONEncoder().encode(value)
-        try set(data, forKey: key)
+        try _setData(data, forKey: key)
     }
     
     /// Retrieve a Codable value from the keychain
@@ -223,7 +223,7 @@ public final class Keychain: Sendable {
     public func get<T: Codable & Sendable>(_ type: T.Type, forKey key: String) throws -> T? {
         try validateKey(key)
         
-        guard let data = try get(forKey: key) else {
+        guard let data = try _getData(forKey: key) else {
             return nil
         }
         
@@ -243,7 +243,7 @@ public final class Keychain: Sendable {
         guard let data = string.data(using: .utf8) else {
             throw KeychainError.unexpectedData
         }
-        try set(data, forKey: key)
+        try _setData(data, forKey: key)
     }
     
     /// Retrieve a string from the keychain
@@ -253,7 +253,7 @@ public final class Keychain: Sendable {
     public func getString(forKey key: String) throws -> String? {
         try validateKey(key)
         
-        guard let data = try get(forKey: key) else {
+        guard let data = try _getData(forKey: key) else {
             return nil
         }
         
@@ -262,5 +262,50 @@ public final class Keychain: Sendable {
         }
         
         return string
+    }
+    
+    // MARK: - Internal (Pre-Validated)
+    
+    /// Internal set without key validation (caller must validate first)
+    internal func _setData(_ data: Data, forKey key: String) throws {
+        let searchQuery = query.searchQuery(account: key)
+        let updateAttributes: [String: Any] = [
+            kSecValueData as String: data
+        ]
+        
+        let updateStatus = SecItemUpdate(searchQuery as CFDictionary, updateAttributes as CFDictionary)
+        
+        if updateStatus == errSecSuccess { return }
+        
+        if updateStatus != errSecItemNotFound {
+            throw KeychainError.from(updateStatus)
+        }
+        
+        let addQuery = query.addQuery(account: key, data: data)
+        let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+        
+        if addStatus != errSecSuccess {
+            throw KeychainError.from(addStatus)
+        }
+    }
+    
+    /// Internal get without key validation (caller must validate first)
+    internal func _getData(forKey key: String) throws -> Data? {
+        let fetchQuery = query.fetchQuery(account: key)
+        
+        var result: AnyObject?
+        let status = SecItemCopyMatching(fetchQuery as CFDictionary, &result)
+        
+        if status == errSecItemNotFound { return nil }
+        
+        if status != errSecSuccess {
+            throw KeychainError.from(status)
+        }
+        
+        guard let data = result as? Data else {
+            throw KeychainError.unexpectedData
+        }
+        
+        return data
     }
 }
